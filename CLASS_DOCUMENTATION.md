@@ -66,8 +66,10 @@ needed.
 ### model - class object; must extend Model:
 The Model class on which the CRUD operations will be applied. This model must provide each object with a method called json. The signature for this is as follows:
 
+```
 def json(self):
   return {...}
+```
 
 This method should be used to return a dictionary representation of each object. This dictionary must be serializable by the django.http.JsonResponse class.
 
