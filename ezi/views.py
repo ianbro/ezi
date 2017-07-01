@@ -19,7 +19,7 @@ class ApiView(View):
             List of verbs that this view can accept. Any requests made for this view
             must be made with a method contained in this list.
 
-            For example, if this list only allows "PUT" and "GET" but the request was
+            For example, if this list only contains "PUT" and "GET" but the request was
             made with a "POST" verb, then that request should not be processed.
 
             The possible verbs for this are POST, GET, PUT, and DELETE
