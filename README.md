@@ -38,10 +38,10 @@ class MyJsonApiView(ApiView):
 
   allowed_methods = ("POST", "PUT")
 
-  def put(self, request, \*args, \**kwargs):
+  def put(self, request, *args, **kwargs):
     return JsonResponse({"success": True})
 
-  def post(self, request, \*args, \**kwargs):
+  def post(self, request, *args, **kwargs):
     return JsonResponse({"success": True})
 
   # No need to add get or delete method as any requests of this type will not be allowed.
@@ -79,7 +79,7 @@ class MyModelCrudApiView(ModelCrudApiView):
 
     allowed_methods = ("POST", "GET", "PUT", "DELETE")
 
-    def delete(self, request, \*args, \**kwargs):
+    def delete(self, request, *args, **kwargs):
       # Override delete in super class.
       return JsonResponse({"success": True})
 

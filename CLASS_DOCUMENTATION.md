@@ -16,7 +16,7 @@ made with a "POST" verb, then that request should not be processed.
 
 The possible verbs for this are POST, GET, PUT, and DELETE
 
-### dispatch(self, request, \*args, \**kwargs)
+### dispatch(self, request, *args, **kwargs)
 Override of the super classes dispatch.
 This implementation of dispatch validates the method of the request.
 
@@ -72,7 +72,7 @@ will be applied. This is only needed on GET and DELETE because these
 are the only methods that use a single active instance. PUT will
 ignore this field by default.
 
-### dispatch(self, request, \*args, \**kwargs)
+### dispatch(self, request, *args, **kwargs)
 Override of the super classes dispatch.
 This implementation simply gets the pk from the url parameters and sets
 it to the attribute instance_pk.
@@ -123,10 +123,10 @@ urls GET parameters.
 
 Returns the number of items deleted.
 
-### put(self, request, \*args, \**kwargs)
+### put(self, request, *args, **kwargs)
 Creates an object and returns the resulting object in json format.
 
-### get(self, request, \*args, \**kwargs)
+### get(self, request, *args, **kwargs)
 Returns either a list of objects or a single object based on the format
 of the url.
 
@@ -141,7 +141,7 @@ from the url GET parameters. These parameters will be wrapped in
 RestApiGetParameter object so this means that all GET parameters must
 be in a valid format to be parsed by that class.
 
-### delete(self, request, \*args, \**kwargs)
+### delete(self, request, *args, **kwargs)
 Deletes either a list of objects or a single object based on the format
 of the url.
 
