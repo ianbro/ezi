@@ -66,6 +66,8 @@ class MyModelCrudApiView(ModelCrudApiView):
 
 For the default behavior, not implementation of the verb methods is needed. ModelCrudApiView implementats these method with default behavior.
 
+* Please NOTE that the default behavior expects your model class to have a method on each object called json. See https://github.com/ianbro/ezi/blob/master/CLASS_DOCUMENTATION.md in the section titled "ezi.views.ModelCrudApiView methods and attributes" in the model attribute documentation for more information on this.
+
 If needed, the verb methods (get, post, put, delete) can be overriden to do what you want. The basic functionality that these methods do are contained and available in methods contained in ModelCrudApiView. For information on these, see https://github.com/ianbro/ezi/blob/master/CLASS_DOCUMENTATION.md.
 
 ```
