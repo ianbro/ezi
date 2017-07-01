@@ -64,7 +64,7 @@ put()) already implement creation and viewing by default so no logic is
 needed.
 
 ### model - class object; must extend Model:
-The Model class on which the CRUD operations will be applied. This model must provide each object with a method called json. The signature for this is as follows:
+The Model class on which the CRUD operations will be applied. In order to use the default implementation of this views verb methods, this model must provide each object with a method called json. The signature for this is as follows:
 
 ```
 def json(self):
