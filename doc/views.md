@@ -1,6 +1,6 @@
-# Class documentation
+# ezi.views.py - Implementation Documentation
 
-## ezi.views.ApiView methods and attributes
+## Class: ezi.views.ApiView
 
 Extends django.views.generic.View
 
@@ -49,7 +49,7 @@ Returns True if the request uses a valid verb. False otherwise
 NOTE: This method simply calls ezi.utils.valid_method. This is just an
 instance method wrapper for that function.
 
-## ezi.views.ModelCrudApiView methods and attributes
+## Class: ezi.views.ModelCrudApiView
 
 Extends ezi.views.ApiView
 
