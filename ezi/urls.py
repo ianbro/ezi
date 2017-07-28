@@ -44,16 +44,16 @@ def crud_api_url_factory(models, url_prefix="api/crud/"):
     def generate_url(cls_model_class):
         return url(
             r'{prefix}{model_name}(?:(?P<pk>\d+))?'.format(
-                {
+                **{
                     "prefix": url_prefix,
-                    "model_name": type(cls_model_class).__name__.lower()
+                    "model_name": cls_model_class.__name__.lower()
                 }
             ),
-            cls_model_class.crud_api_view,
+            cls_model_class.crud_api_view().as_view(),
             name = "{prefix}_{model_name}".format(
-                {
+                **{
                     "prefix": url_prefix.replace("/", "_"),
-                    "model_name": type(cls_model_class).__name__.lower()
+                    "model_name": cls_model_class.__name__.lower()
                 }
             )
         )
