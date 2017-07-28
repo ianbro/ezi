@@ -237,3 +237,21 @@ class ModelCrudApiView(ApiView):
         else:
             num_deleted = self.delete_object_list()
             return respond_list_deleted(num_deleted)
+
+
+def model_crud_api_view_factory(model_class):
+    """
+    Returns a class based view that contains default behavior for the ezi view
+    ModelCrudApiView. This view is applied to the model_class and its __name__
+    is "{model_name}CrudApiView" where {model_name} is the model classes name.
+
+    The allowed_methods in this view are GET, POST, PUT and DELETE.
+    The model attribute for this view is the class in the parameter model_class.
+    """
+    class ApiView(ModelCrudApiView):
+        model = model_class
+        allowed_methods = ("GET", "POST", "PUT", "DELETE")
+
+    ApiView.__name__ = "{model_name}CrudApiView".format(model_name=type(model_class).__name__)
+
+    return ApiView
