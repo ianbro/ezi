@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import View
 
@@ -27,6 +28,26 @@ class ApiView(View):
 
     allowed_methods = ()
 
+    _payload = {}
+    @property
+    def payload(self):
+        if not self._payload:
+            data = {}
+            payload = self.request.read()
+
+            if not payload: return {}
+
+            payload_list = payload.split("\n")
+            for argument in payload_list:
+                key_val = argument.split("]:=:[")
+                key = key_val[0][1:]
+                val = key_val[1][:-1]
+                data[key] = val
+
+            self._payload = data
+
+        return self._payload
+
     def dispatch(self, request, *args, **kwargs):
         """
         Override of the super classes dispatch.
@@ -52,16 +73,23 @@ class ApiView(View):
         This method acheives that and returns the parameters as a key_value pair
         that can be sent to a queryset.
 
-        This will get parameters from GET, PUT, POST or DELETE. The one that it
-        gets them from is decided by verb. It defaults to self.request.method.
+        This will get parameters from the request body unless the verb is GET.
+        In this case, the parameters will be grabbed from the url parameters in
+        self.request.GET.
 
-        verb must be one of "GET", "PUT", "POST" or "DELETE".
+        verb must be one of "GET", "PUT", "POST" or DELETE.
 
         NOTE: This uses the method implementation that is in this module outside
         of this class. This is not recursion; the method it is calling just has
         the same name. This method just acts as a wrapper for that.
         """
-        return get_params_to_queryset_kwargs(getattr(self.request, verb or self.request.method))
+        if verb == "GET" or verb == "HEAD": data = self.request.GET
+        else:
+            data = {}
+            for key, val in self.payload.items():
+                if "::" in key and len(key.split("::")) == 2:
+                    data[key] = val
+        return get_params_to_queryset_kwargs(data)
 
     def valid_method(self):
         """
@@ -126,7 +154,10 @@ class ModelCrudApiView(ApiView):
 
         If no object with those conditions is found, then a 404 error is thrown.
         """
-        return get_object_or_404(self.model, pk=self.instance_pk)
+        try:
+            return self.get_object_list().get(pk=self.instance_pk)
+        except self.model.DoesNotExist:
+            raise Http404("Object not found with a primary key of: {} and the given GET parameters.".format(self.instance_pk))
 
     def get_object_json(self):
         """
@@ -250,7 +281,7 @@ def model_crud_api_view_factory(model_class):
     """
     class ApiView(ModelCrudApiView):
         model = model_class
-        allowed_methods = ("GET", "POST", "PUT", "DELETE")
+        allowed_methods = ("GET", "PUT", "DELETE")
 
     ApiView.__name__ = "{model_name}CrudApiView".format(model_name=type(model_class).__name__)
 

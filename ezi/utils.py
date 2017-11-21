@@ -145,7 +145,6 @@ class RestApiGetParameter:
         This method assumes that the key is in the format name::type. If this is
         not so, then a ValueError is thrown.
         """
-        print get_param_key
         param_key_parts = get_param_key.split(RestApiGetParameter._NAME_TYPE_DELIMITER)
         if not len(param_key_parts) == 2 or "" in param_key_parts:
             raise self._bad_param_key_format_error(get_param_key)

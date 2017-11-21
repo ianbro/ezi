@@ -1,6 +1,26 @@
 var _crudApiPrefixes = {}
 
 /**
+Returns the value of the cookie with the given name. I am specifically using
+this to get the csrftoken.
+*/
+function _getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/**
 Creates an entry in _api_prefixes that maps an app name to an API prefix. This
 prefix should include the url starting after the domain and ending at the base
 url for all api endpoints in the registered api.
@@ -50,8 +70,33 @@ function eziBuildGETParams(data, pkInURL=false) {
 
     // Remove the last character which will be an & if any params were added.
     if (Object.keys(data).length) {
-      paramsSTR = urlslice(0, url.length-1);
+      paramsSTR = paramsSTR.slice(0, paramsSTR.length-1);
     }
+
+    return paramsSTR
+  } else {
+    return "";
+  }
+}
+
+function eziBuildRequestPayload(data, pkInURL=false) {
+  if (data) {
+    payload = "";
+
+    for (key in data) {
+      if (key == "pk::int" && pkInURL) {
+        // Don't add it to the payload.
+      } else {
+        payload = payload + "[" + key + "]:=:[" + data[key] + "]\n";
+      }
+    }
+
+    // Remove the last character which will be an & if any params were added.
+    if (Object.keys(data).length) {
+      payload = payload.slice(0, payload.length-1);
+    }
+
+    return payload;
   } else {
     return "";
   }
@@ -64,7 +109,14 @@ successCallback function will be called. Otherwise, the failureCallback function
 will be called.
 */
 function eziAjaxCall(url, successCallback, method="GET", data={}, failureCallback=function(){}, pkInURL=false) {
-  if (method == "GET" || method == "HEAD") { url = eziBuildGETParams(data, pkInURL); }
+  var payload = null;
+  if (method == "GET" || method == "HEAD") { url = url + eziBuildGETParams(data, pkInURL); }
+  else {
+    if (pkInURL && "pk::int" in data) {
+      url = url + data["pk::int"].toString() + "/";
+    }
+    payload = eziBuildRequestPayload(data, pkInURL);
+  }
 
   request = new XMLHttpRequest();
   request.onreadystatechange = function() {
@@ -78,11 +130,85 @@ function eziAjaxCall(url, successCallback, method="GET", data={}, failureCallbac
   }
 
   request.open(method, url, true);
-  request.send(data);
+  request.setRequestHeader("X-CSRFToken", _getCookie("csrftoken"));
+  console.log(method);
+  console.log(data);
+  console.log(payload);
+  request.send(payload);
 }
 
+/**
+Returns a list of objects in the database from the api that match the given
+parameters.
+
+Parameters:
+  app: name of the app that the api belongs to. This is used to fetch the url.
+  model: name of the model in the app that this api call will fetch. This is
+          used to fetch the url.
+  params: list of parameters to send in the api call.
+  apiName: name of the api in the app that this call belongs to. THis is used to
+          fetch the url.
+  successCallback: function that will be called after the api call returns with
+          a status code of 200.
+  failureCallback: function that will be called after the api call returns with
+          a status code that is not 200.
+*/
 function eziGETModel(app, model, params, successCallback, apiName="default", failureCallback=function(){}) {
-  urlPrefix = _crudApiPrefixes[app][apiName].url + model.toLowerCase();
+  urlPrefix = _crudApiPrefixes[app][apiName].url + model.toLowerCase() + "/";
   pkInURL = _crudApiPrefixes[app][apiName].pkInURL;
-  eziAjaxCall(urlPrefix, successCallback, data=params, failureCallback=failureCallback, pkInURL=pkInURL)
+  eziAjaxCall(urlPrefix, successCallback, "GET", data=params, failureCallback=failureCallback, pkInURL=pkInURL)
+}
+
+/**
+Makes a PUT call to a crud api that will create an instance of the given model
+with the given values in params.
+
+Parameters:
+  app: name of the app that the api belongs to. This is used to fetch the url.
+  model: name of the model in the app that this api call will instantiate. This
+          is used to fetch the url.
+  params: list of parameters to send in the api call.
+  apiName: name of the api in the app that this call belongs to. THis is used to
+          fetch the url.
+  successCallback: function that will be called after the api call returns with
+          a status code of 200.
+  failureCallback: function that will be called after the api call returns with
+          a status code that is not 200.
+
+NOTE: The csrf token is not needed in params. It is automatically retreived from
+the cookies.
+*/
+function eziInstantiateModel(app, model, params, successCallback, apiName="default", failureCallback=function(){}) {
+  urlPrefix = _crudApiPrefixes[app][apiName].url + model.toLowerCase() + "/";
+  pkInURL = _crudApiPrefixes[app][apiName].pkInURL;
+  params.csrfmiddlewaretoken = _getCookie("csrftoken");
+  console.log(params);
+  eziAjaxCall(urlPrefix, successCallback, "PUT", data=params, failureCallback=failureCallback, pkInURL=pkInURL)
+}
+
+/**
+Deletes a list of objects in the database using a DELETE call to a specific api
+endpoint.
+
+Parameters:
+  app: name of the app that the api belongs to. This is used to fetch the url.
+  model: name of the model in the app that this api call will fetch to delete.
+          This is used to fetch the url.
+  params: list of parameters to send in the api call.
+  apiName: name of the api in the app that this call belongs to. THis is used to
+          fetch the url.
+  successCallback: function that will be called after the api call returns with
+          a status code of 200.
+  failureCallback: function that will be called after the api call returns with
+          a status code that is not 200.
+
+NOTE: The csrf token is not needed in params. It is automatically retreived from
+the cookies.
+*/
+function eziDeleteModelInstance(app, model, params, successCallback, apiName="default", failureCallback=function(){}) {
+  urlPrefix = _crudApiPrefixes[app][apiName].url + model.toLowerCase() + "/";
+  pkInURL = _crudApiPrefixes[app][apiName].pkInURL;
+  params.csrfmiddlewaretoken = _getCookie("csrftoken");
+  console.log(params);
+  eziAjaxCall(urlPrefix, successCallback, "DELETE", data=params, failureCallback=failureCallback, pkInURL=pkInURL)
 }
