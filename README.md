@@ -11,6 +11,15 @@ In your virtual environment, run
 
 ```pip install git+git://github.com/ianbro/ezi.git```
 
+Then add ezi to your installed apps:
+
+```
+INSTALLED_APPS = [
+    ...,
+    'ezi'
+]
+```
+
 ## Getting Started
 
 ### Basic JSON API
