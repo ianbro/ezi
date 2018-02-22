@@ -294,7 +294,15 @@ class RestApiGetParameter:
         string representations of themselves that are ready to be used in GET
         parameters and converted back to a RestApiGetParameter object.
         """
-        return "{0}::{1}".format(self._attribute_name, self._attribute_type), "{0}".format(self._value_to_get_parameter_value())
+        return "{0}::{1}".format(self._attribute_name, self._attribute_type), "{0}".format(self._format_value_to_get_parameter_value())
+
+    def format_as_get_parameter_str(self):
+        """"
+        Returns the string that contains the parameter string and value in one
+        string to add to the GET parameters to send with a url. This will return
+        a string with the format "name::type=value".
+        """"
+        return "=".join(self.format())
 
     def key_value(self):
         """
